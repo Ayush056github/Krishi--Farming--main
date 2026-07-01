@@ -69,7 +69,7 @@ router.post("/analyze-image", async(req, res) => {
         const imageMimeType = image.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,/)[1];
 
         const response = await fetchWithRetry(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

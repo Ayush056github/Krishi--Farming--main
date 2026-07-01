@@ -13,6 +13,18 @@ function toSimplePlainText(text) {
         .trim();
 }
 
+async function fetchWithRetry(url, options, retries = 2, delay = 1500) {
+    for (let i = 0; i <= retries; i++) {
+        const response = await fetch(url, options);
+        if (response.status === 429 && i < retries) {
+            console.warn(`Gemini API returned 429. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+        }
+        return response;
+    }
+}
+
 router.post("/chat", async(req, res) => {
     try {
         const { message, context } = req.body;
@@ -58,8 +70,8 @@ Provide a helpful, clear, and direct response in simple English. Do not use bull
             });
         }
 
-        const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+        const response = await fetchWithRetry(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
