@@ -57,9 +57,16 @@ export default function ChatbotWidget() {
                     }
 
                     const data = await response.json();
-                    const analysis =
-                        data?.analysis ||
-                        "I've analyzed your image. What would you like to know about it?";
+                    let analysis = data?.analysis;
+                    if (analysis && typeof analysis === "object") {
+                        const healthInfo = analysis.diseaseDetected
+                            ? `Disease: ${analysis.diseaseDetails?.diseaseName} (${analysis.diseaseDetails?.severity}). Cause: ${analysis.diseaseDetails?.cause}.`
+                            : `Health: ${analysis.healthyDetails?.message || "Healthy"}. Next Stage: ${analysis.healthyDetails?.expectedNextStage}.`;
+                        
+                        analysis = `I analyzed the image of the plant: ${analysis.plantName} (${analysis.cropName}).\n\nGrowth Stage: ${analysis.growthStage}\nHealth Status: ${analysis.plantHealth} (${analysis.confidenceScore})\n\n${healthInfo}`;
+                    } else if (!analysis) {
+                        analysis = "I've analyzed your image. What would you like to know about it?";
+                    }
 
                     setMessages([
                         { role: "assistant", content: "Hey there🌻 \nI see you've uploaded an image!" },
