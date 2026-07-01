@@ -2,6 +2,18 @@ import { Router } from "express";
 
 const router = Router();
 
+async function fetchWithRetry(url, options, retries = 2, delay = 1500) {
+    for (let i = 0; i <= retries; i++) {
+        const response = await fetch(url, options);
+        if (response.status === 429 && i < retries) {
+            console.warn(`Gemini API returned 429. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+        }
+        return response;
+    }
+}
+
 router.post("/analyze-image", async(req, res) => {
     try {
         const { image } = req.body;
@@ -28,23 +40,23 @@ router.post("/analyze-image", async(req, res) => {
   "cropName": "string",
   "growthStage": "Seed" | "Germination" | "Baby Plant" | "Vegetative Stage" | "Flowering Stage" | "Fruiting Stage" | "Harvest Stage",
   "plantHealth": "Healthy" | "Slightly Unhealthy" | "Diseased" | "Critical",
-  "confidenceScore": "string (e.g. 95%)",
+  "confidenceScore": "string",
   "diseaseDetected": boolean,
-  "diseaseDetails": { // only if diseaseDetected is true, else null
+  "diseaseDetails": {
     "diseaseName": "string",
     "cause": "string",
     "symptoms": "string",
-    "severity": "string (Mild | Moderate | Severe)",
+    "severity": "Mild" | "Moderate" | "Severe",
     "organicTreatment": "string",
     "chemicalTreatment": "string",
     "preventionTips": "string"
   },
-  "healthyDetails": { // only if diseaseDetected is false, else null
+  "healthyDetails": {
     "message": "✅ Plant is Healthy",
     "expectedNextStage": "string",
     "recommendedCare": "string"
   },
-  "growthStageAdvice": { // Advice tailored to the identified growthStage
+  "growthStageAdvice": {
     "waterRequirement": "string",
     "sunlight": "string",
     "fertilizer": "string",
@@ -56,7 +68,7 @@ router.post("/analyze-image", async(req, res) => {
         const imageData = image.split(",")[1];
         const imageMimeType = image.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,/)[1];
 
-        const response = await fetch(
+        const response = await fetchWithRetry(
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
                 method: "POST",
                 headers: {
