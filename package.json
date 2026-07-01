@@ -1,0 +1,20 @@
+{
+  "name": "krishi-kisan",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "mongoose": "^8.5.1",
+    "morgan": "^1.10.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --prefix Backend run dev",
+    "dev:client": "npm --prefix Frontend run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
