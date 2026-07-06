@@ -1,22 +1,44 @@
-                                                                                                                                                                                                                   :root {
-                                                                                                                                                                                                                      --bg: #f3fbf6;
-                                                                                                                                                                                                                      --primary: #22c55e;
-                                                                                                                                                                                                                      --text: #0f172a;
-                                                                                                                                                                                                                      --muted: #475569;
-                                                                                                                                                                                                                      --border: #e2e8f0;
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                                  
-                                                                                                                                                                                                                  [data-theme="dark"] {
-                                                                                                                                                                                                                      --bg: #0f172a;
-                                                                                                                                                                                                                      --primary: #22c55e;
-                                                                                                                                                                                                                      --text: #f1f5f9;
-                                                                                                                                                                                                                      --muted: #94a3b8;
-                                                                                                                                                                                                                      --border: #334155;
-                                                                                                                                                                                                                  }
-                                                                                                                                                                                                                  
-                                                                                                                                                                                                                  * {
-                                                                                                                                                                                                                      box-sizing: border-box;
-                                                                                                                                                                                                                  }
+:root {
+   --bg: #f3fbf6;
+   --primary: #22c55e;
+   --text: #0f172a;
+   --muted: #475569;
+   --border: #e2e8f0;
+   --card-bg: #ffffff;
+   --inner-bg: #f8fafc;
+   --text-main: #0f172a;
+   --text-muted: #64748b;
+   --warning-card-bg: #fff7ed;
+   --warning-text: #c2410c;
+   --warning-text-muted: #7c2d12;
+   --chemical-text: #0369a1;
+}
+
+[data-theme="dark"] {
+   --bg: #0f172a;
+   --primary: #22c55e;
+   --text: #f1f5f9;
+   --muted: #94a3b8;
+   --border: #334155;
+   --card-bg: #1e293b;
+   --inner-bg: #0f172a;
+   --text-main: #f1f5f9;
+   --text-muted: #94a3b8;
+   --warning-card-bg: rgba(234, 88, 12, 0.15);
+   --warning-text: #f97316;
+   --warning-text-muted: #fdba74;
+   --chemical-text: #38bdf8;
+}
+
+* {
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+html, body {
+    background: var(--bg);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   body {
                                                                                                                                                                                                                       margin: 0;
@@ -1121,54 +1143,59 @@
                                                                                                                                                                                                                   /* Dark mode for various components */
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .input {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                       color: var(--text);
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .chat-layout {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .context-card {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .chat-panel {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .chat-messages {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #0f172a;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .chat-input {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .chat-input textarea {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #0f172a;
                                                                                                                                                                                                                       color: var(--text);
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .icon-btn {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .dash-card {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .dh-btn {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .hero {
-                                                                                                                                                                                                                      background: linear-gradient(180deg, #fdfdfd 0%, #fdfdfd 100%);
+                                                                                                                                                                                                                      background: linear-gradient(180deg, #064e3b 0%, #0f172a 100%);
                                                                                                                                                                                                                   }
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   [data-theme="dark"] .about-story {
-                                                                                                                                                                                                                      background: #fdfdfd;
+                                                                                                                                                                                                                      background: #1e293b;
                                                                                                                                                                                                                   }
+                                                                                                                                                                                                                  
+                                                                                                                                                                                                                  [data-theme="dark"] .alerts-content {
+                                                                                                                                                                                                                      background: #1e293b;
+                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                  
                                                                                                                                                                                                                   /* Modal Styles */
                                                                                                                                                                                                                   
                                                                                                                                                                                                                   .alerts-modal {
@@ -1815,3 +1842,48 @@
                                                                                                                                                                                                                       color: var(--muted);
                                                                                                                                                                                                                       margin: 0;
                                                                                                                                                                                                                   }
+
+/* Additional Styles for Weather & Market Prices */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner-small {
+    animation: spin 1s linear infinite;
+}
+
+[data-theme="dark"] .weather-metric {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+[data-theme="dark"] select.input {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] table {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+}
+
+[data-theme="dark"] thead tr {
+    background-color: #0f172a !important;
+}
+
+[data-theme="dark"] tbody tr {
+    border-bottom-color: #334155 !important;
+}
+
+[data-theme="dark"] th {
+    color: #94a3b8 !important;
+    background-color: #1e293b !important;
+}
+
+[data-theme="dark"] td {
+    color: #f1f5f9 !important;
+    background-color: #1e293b !important;
+}

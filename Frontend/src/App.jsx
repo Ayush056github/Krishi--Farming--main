@@ -11,6 +11,7 @@ import KnowledgePage from "./pages/KnowledgePage.jsx";
 import ActivitiesPage from "./pages/ActivitiesPage.jsx";
 import Profile from "./pages/Profile.jsx";
 import About from "./pages/About.jsx";
+import MarketPrices from "./pages/MarketPrices.jsx";
 import { ImageProvider } from "./contexts/ImageContext.jsx";
 
 export default function App() {
@@ -29,7 +30,12 @@ export default function App() {
 					<Route path="/activities" element={<ActivitiesPage />} />
 					<Route path="/profile" element={<Profile />} />
 					<Route path="/about" element={<About />} />
+					<Route path="/market-prices" element={<MarketPrices />} />
 				</Routes>
+				<footer style={{ textAlign: "center", padding: "1.5rem 0", borderTop: "1px solid var(--border)", marginTop: "2rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+					<p>© {new Date().getFullYear()} Krishi Kisan. All Rights Reserved.</p>
+					<p style={{ marginTop: "0.25rem", fontWeight: "600" }}>Designed & Developed by: Ayush Mathur</p>
+				</footer>
 				<ChatbotWidget />
 			</div>
 		</ImageProvider>

@@ -4,6 +4,8 @@ import morgan from "morgan";
 import healthRoutes from "./routes/health.routes.js";
 import chatbotRoutes from "./routes/chatbot.routes.js";
 import visionRoutes from "./routes/vision.routes.js";
+import weatherRoutes from "./routes/weather.routes.js";
+import marketRoutes from "./routes/market.routes.js";
 import { notFoundHandler, errorHandler } from "./middlewares/errorHandler.js";
 
 export function createApp() {
@@ -17,6 +19,8 @@ export function createApp() {
     app.use("/api", healthRoutes);
     app.use("/api", chatbotRoutes);
     app.use("/api", visionRoutes);
+    app.use("/api", weatherRoutes);
+    app.use("/api", marketRoutes);
 
     app.use(notFoundHandler);
     app.use(errorHandler);

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useImage } from "../contexts/ImageContext.jsx";
+import { jsPDF } from "jspdf";
 
 export default function SmartEngine() {
   const [imageFile, setImageFile] = useState(null);
@@ -95,6 +96,220 @@ export default function SmartEngine() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const downloadPDF = () => {
+    if (!result) return;
+    
+    const doc = new jsPDF();
+    
+    let farmerName = "Krishi Kisan Farmer";
+    let farmerLocation = "Not Specified";
+    const savedProfile = localStorage.getItem("profile");
+    if (savedProfile) {
+      try {
+        const profile = JSON.parse(savedProfile);
+        if (profile.name) farmerName = profile.name;
+        if (profile.location) farmerLocation = profile.location;
+      } catch (e) {}
+    }
+    
+    const textDark = "#1e293b";
+    const textMuted = "#64748b";
+    
+    // Outer border
+    doc.setDrawColor(34, 197, 94);
+    doc.setLineWidth(1);
+    doc.rect(5, 5, 200, 287);
+    
+    // Header Banner
+    doc.setFillColor(34, 197, 94);
+    doc.rect(5, 5, 200, 25, "F");
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("KRISHI KISAN - AI CROP HEALTH REPORT", 12, 21);
+    
+    // Date & Farmer details
+    doc.setTextColor(textDark);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 145, 42);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Farmer Profile Details:", 12, 42);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Name: ${farmerName}`, 12, 48);
+    doc.text(`Location: ${farmerLocation}`, 12, 54);
+    
+    doc.setDrawColor(226, 232, 240);
+    doc.line(12, 60, 198, 60);
+    
+    // 1. Health Overview
+    doc.setTextColor(22, 163, 74);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("1. Health Overview", 12, 68);
+    
+    doc.setTextColor(textDark);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Plant Identified: ${result.plantName || "N/A"}`, 15, 76);
+    doc.text(`Crop Name: ${result.cropName || "N/A"}`, 15, 82);
+    doc.text(`Growth Stage: ${result.growthStage || "N/A"}`, 15, 88);
+    doc.text(`Confidence Score: ${result.confidenceScore || "N/A"}`, 15, 94);
+    
+    // Health status badge box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(145, 68, 50, 25, "F");
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(145, 68, 50, 25, "S");
+    doc.setTextColor(textMuted);
+    doc.setFontSize(8);
+    doc.text("DIAGNOSTIC STATUS", 148, 74);
+    
+    const health = result.plantHealth || "Healthy";
+    if (health.toLowerCase().includes("healthy") && !health.toLowerCase().includes("unhealthy")) {
+      doc.setTextColor(22, 163, 74);
+    } else {
+      doc.setTextColor(185, 28, 28);
+    }
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(health.toUpperCase(), 148, 84);
+    
+    doc.setDrawColor(226, 232, 240);
+    doc.line(12, 102, 198, 102);
+    
+    // 2. Health Diagnosis
+    doc.setTextColor(22, 163, 74);
+    doc.setFontSize(12);
+    doc.text("2. Health Diagnosis & Details", 12, 110);
+    
+    doc.setTextColor(textDark);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    
+    let currentY = 118;
+    if (result.diseaseDetected && result.diseaseDetails) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`Disease Detected: ${result.diseaseDetails.diseaseName || "Yes"}`, 15, currentY);
+      doc.setFont("helvetica", "normal");
+      
+      currentY += 8;
+      doc.setFont("helvetica", "bold");
+      doc.text("Severity: ", 15, currentY);
+      doc.setFont("helvetica", "normal");
+      doc.text(result.diseaseDetails.severity || "Moderate", 32, currentY);
+      
+      currentY += 8;
+      const causeText = doc.splitTextToSize(`Primary Cause: ${result.diseaseDetails.cause || "N/A"}`, 175);
+      doc.text(causeText, 15, currentY);
+      currentY += causeText.length * 5;
+      
+      const symptomsText = doc.splitTextToSize(`Symptoms: ${result.diseaseDetails.symptoms || "N/A"}`, 175);
+      doc.text(symptomsText, 15, currentY);
+      currentY += symptomsText.length * 5;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(22, 163, 74);
+      doc.text(result.healthyDetails?.message || "Plant is Healthy", 15, currentY);
+      doc.setTextColor(textDark);
+      doc.setFont("helvetica", "normal");
+      
+      currentY += 8;
+      const nextStageText = doc.splitTextToSize(`Expected Next Growth Stage: ${result.healthyDetails?.expectedNextStage || "N/A"}`, 175);
+      doc.text(nextStageText, 15, currentY);
+      currentY += nextStageText.length * 5;
+      
+      const careText = doc.splitTextToSize(`Recommended General Care: ${result.healthyDetails?.recommendedCare || "N/A"}`, 175);
+      doc.text(careText, 15, currentY);
+      currentY += careText.length * 5;
+    }
+    
+    doc.setDrawColor(226, 232, 240);
+    doc.line(12, currentY + 2, 198, currentY + 2);
+    currentY += 10;
+    
+    // 3. Advisories and Treatments
+    if (result.diseaseDetected && result.diseaseDetails) {
+      doc.setTextColor(22, 163, 74);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("3. Recommended Treatment Plan", 12, currentY);
+      currentY += 8;
+      
+      doc.setTextColor(textDark);
+      doc.setFontSize(10);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Organic / Cultural Treatment:", 15, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY += 5;
+      const organicText = doc.splitTextToSize(result.diseaseDetails.organicTreatment || "N/A", 175);
+      doc.text(organicText, 18, currentY);
+      currentY += organicText.length * 5 + 3;
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Chemical Treatment (if required):", 15, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY += 5;
+      const chemicalText = doc.splitTextToSize(result.diseaseDetails.chemicalTreatment || "N/A", 175);
+      doc.text(chemicalText, 18, currentY);
+      currentY += chemicalText.length * 5 + 3;
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Long-term Prevention Advice:", 15, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY += 5;
+      const prevText = doc.splitTextToSize(result.diseaseDetails.preventionTips || "N/A", 175);
+      doc.text(prevText, 18, currentY);
+    } else {
+      doc.setTextColor(22, 163, 74);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("3. Growth Stage Advisory", 12, currentY);
+      currentY += 8;
+      
+      doc.setTextColor(textDark);
+      doc.setFontSize(10);
+      
+      if (result.growthStageAdvice) {
+        doc.setFont("helvetica", "bold");
+        doc.text("Water Requirement: ", 15, currentY);
+        doc.setFont("helvetica", "normal");
+        doc.text(result.growthStageAdvice.waterRequirement || "N/A", 52, currentY);
+        currentY += 7;
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Sunlight Requirement: ", 15, currentY);
+        doc.setFont("helvetica", "normal");
+        doc.text(result.growthStageAdvice.sunlight || "N/A", 54, currentY);
+        currentY += 7;
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Nutrient / Fertilizer: ", 15, currentY);
+        doc.setFont("helvetica", "normal");
+        doc.text(result.growthStageAdvice.fertilizer || "N/A", 52, currentY);
+        currentY += 7;
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Plant Protection Advisory: ", 15, currentY);
+        doc.setFont("helvetica", "normal");
+        currentY += 5;
+        const protText = doc.splitTextToSize(result.growthStageAdvice.protection || "N/A", 175);
+        doc.text(protText, 18, currentY);
+      }
+    }
+    
+    // Bottom Disclaimer Footer
+    doc.setTextColor(textMuted);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.text("Disclaimer: This report is generated by Krishi Kisan AI based on image parameters. Please cross-reference with local agronomists.", 12, 283);
+    
+    doc.save(`Krishi_Kisan_${(result.plantName || "Plant").replace(/\s+/g, "_")}_Report.pdf`);
+  };
+
   const getHealthBadgeClass = (health) => {
     if (!health) return "badge-health";
     const h = health.toLowerCase();
@@ -116,18 +331,18 @@ export default function SmartEngine() {
           </p>
         </div>
 
-        <div style={{ background: "white", borderRadius: "16px", padding: "2rem", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", marginBottom: "2rem" }}>
+        <div style={{ background: "var(--card-bg)", borderRadius: "16px", padding: "2rem", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", marginBottom: "2rem" }}>
           {!imagePreview ? (
             <div
               onClick={() => fileInputRef.current?.click()}
-              style={{ border: "2px dashed #22c55e", borderRadius: "12px", padding: "4rem 2rem", textAlign: "center", cursor: "pointer", background: "#f8fafc", transition: "all 0.3s ease" }}
+              style={{ border: "2px dashed #22c55e", borderRadius: "12px", padding: "4rem 2rem", textAlign: "center", cursor: "pointer", background: "var(--inner-bg)", transition: "all 0.3s ease" }}
               className="upload-dropzone"
             >
-              <span style={{ fontSize: "3rem", display: "block", marginBottom: "1rem" }}>📸</span>
-              <h3 style={{ fontSize: "1.25rem", color: "#1e293b", marginBottom: "0.5rem", fontWeight: "600" }}>
+
+              <h3 style={{ fontSize: "1.25rem", color: "var(--text)", marginBottom: "0.5rem", fontWeight: "600" }}>
                 Click to upload crop or plant image
               </h3>
-              <p style={{ fontSize: "0.9rem", color: "#64748b" }}>Supports JPG, JPEG, PNG formats</p>
+              <p style={{ fontSize: "0.9rem", color: "var(--muted)" }}>Supports JPG, JPEG, PNG formats</p>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
             </div>
           ) : (
@@ -155,10 +370,10 @@ export default function SmartEngine() {
         </div>
 
         {isLoading && (
-          <div style={{ background: "white", borderRadius: "16px", padding: "2rem", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", marginBottom: "2rem" }} className="loading-container">
+          <div style={{ background: "var(--card-bg)", borderRadius: "16px", padding: "2rem", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", marginBottom: "2rem" }} className="loading-container">
             <div className="loading-spinner"></div>
-            <h3 style={{ margin: "0", color: "#1e293b", fontWeight: "600" }}>Running AI Health Diagnostics...</h3>
-            <p style={{ color: "#64748b", margin: "6px 0 0" }}>Identifying crops, growth stages, and checking for disease symptoms.</p>
+            <h3 style={{ margin: "0", color: "var(--text)", fontWeight: "600" }}>Running AI Health Diagnostics...</h3>
+            <p style={{ color: "var(--muted)", margin: "6px 0 0" }}>Identifying crops, growth stages, and checking for disease symptoms.</p>
             <div className="analysis-progress-bar">
               <div className="progress-fill"></div>
             </div>
@@ -177,18 +392,37 @@ export default function SmartEngine() {
 
         {result && (
           <div className="result-container">
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1.5rem" }}>
+              <button
+                onClick={downloadPDF}
+                className="btn primary"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "0.75rem 1.5rem",
+                  fontSize: "1.05rem",
+                  fontWeight: "700",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 6px rgba(22, 163, 74, 0.15)"
+                }}
+              >
+                📄 Download Report PDF
+              </button>
+            </div>
             <div className="result-grid">
               
               <div className="result-card">
                 <h3>🩺 Health Overview</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   <div>
-                    <span style={{ color: "#64748b", fontSize: "0.9rem", display: "block" }}>Plant Identified</span>
-                    <strong style={{ fontSize: "1.15rem", color: "#0f172a" }}>{result.plantName || "Unknown"}</strong>
+                    <span style={{ color: "var(--muted)", fontSize: "0.9rem", display: "block" }}>Plant Identified</span>
+                    <strong style={{ fontSize: "1.15rem", color: "var(--text)" }}>{result.plantName || "Unknown"}</strong>
                   </div>
                   <div>
-                    <span style={{ color: "#64748b", fontSize: "0.9rem", display: "block" }}>Crop Type</span>
-                    <strong style={{ fontSize: "1.1rem", color: "#0f172a" }}>{result.cropName || "Unknown"}</strong>
+                    <span style={{ color: "var(--muted)", fontSize: "0.9rem", display: "block" }}>Crop Type</span>
+                    <strong style={{ fontSize: "1.1rem", color: "var(--text)" }}>{result.cropName || "Unknown"}</strong>
                   </div>
                   <div style={{ display: "flex", gap: "24px", marginTop: "4px" }}>
                     <div>
@@ -213,11 +447,11 @@ export default function SmartEngine() {
                     </div>
                     <div>
                       <strong>Cause: </strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.diseaseDetails?.cause}</span>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.diseaseDetails?.cause}</span>
                     </div>
                     <div>
                       <strong>Symptoms: </strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.diseaseDetails?.symptoms}</span>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.diseaseDetails?.symptoms}</span>
                     </div>
                     <div>
                       <strong>Severity: </strong>
@@ -233,11 +467,11 @@ export default function SmartEngine() {
                     </div>
                     <div>
                       <strong>Expected Next Growth Stage: </strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.healthyDetails?.expectedNextStage}</span>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.healthyDetails?.expectedNextStage}</span>
                     </div>
                     <div>
                       <strong>Recommended General Care: </strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.healthyDetails?.recommendedCare}</span>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.healthyDetails?.recommendedCare}</span>
                     </div>
                   </div>
                 )}
@@ -272,9 +506,9 @@ export default function SmartEngine() {
                   </div>
                   
                   {result.growthStageAdvice?.commonProblems && (
-                    <div className="advice-card" style={{ borderLeftColor: "#ea580c", background: "#fff7ed" }}>
-                      <h4 style={{ color: "#c2410c" }}>⚠️ Common Problems at this Stage</h4>
-                      <p style={{ color: "#7c2d12" }}>{result.growthStageAdvice.commonProblems}</p>
+                    <div className="advice-card" style={{ borderLeftColor: "#ea580c", background: "var(--warning-card-bg)" }}>
+                      <h4 style={{ color: "var(--warning-text)" }}>⚠️ Common Problems at this Stage</h4>
+                      <p style={{ color: "var(--warning-text-muted)" }}>{result.growthStageAdvice.commonProblems}</p>
                     </div>
                   )}
                 </div>
@@ -285,16 +519,16 @@ export default function SmartEngine() {
                   <h3>💊 Treatment Plan</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ borderLeft: "4px solid #16a34a", paddingLeft: "12px" }}>
-                      <strong style={{ color: "#15803d", display: "block", marginBottom: "4px" }}>🍀 Organic Treatment</strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.diseaseDetails.organicTreatment}</span>
+                      <strong style={{ color: "var(--primary)", display: "block", marginBottom: "4px" }}>🍀 Organic Treatment</strong>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.diseaseDetails.organicTreatment}</span>
                     </div>
                     <div style={{ borderLeft: "4px solid #0284c7", paddingLeft: "12px" }}>
-                      <strong style={{ color: "#0369a1", display: "block", marginBottom: "4px" }}>🧪 Chemical Treatment</strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.diseaseDetails.chemicalTreatment}</span>
+                      <strong style={{ color: "var(--chemical-text)", display: "block", marginBottom: "4px" }}>🧪 Chemical Treatment</strong>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.diseaseDetails.chemicalTreatment}</span>
                     </div>
                     <div style={{ borderLeft: "4px solid #ea580c", paddingLeft: "12px" }}>
-                      <strong style={{ color: "#c2410c", display: "block", marginBottom: "4px" }}>🛡️ Prevention Tips</strong>
-                      <span style={{ fontSize: "0.95rem", color: "#475569" }}>{result.diseaseDetails.preventionTips}</span>
+                      <strong style={{ color: "var(--warning-text)", display: "block", marginBottom: "4px" }}>🛡️ Prevention Tips</strong>
+                      <span style={{ fontSize: "0.95rem", color: "var(--muted)" }}>{result.diseaseDetails.preventionTips}</span>
                     </div>
                   </div>
                 </div>
